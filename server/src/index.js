@@ -1,9 +1,10 @@
-import cors from 'cors';
 import express from 'express';
+import cors from 'cors';
 import { config } from './config.js';
 import healthRouter from './routes/health.js';
 import authRouter from './routes/auth.js';
 import panchayatRouter from './routes/panchayats.js';
+import grievanceRouter from './routes/grievances.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.get('/api', (_req, res) => {
 app.use('/api/health', healthRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/panchayats', panchayatRouter);
+app.use('/api/grievances', grievanceRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found' });
