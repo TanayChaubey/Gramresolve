@@ -16,6 +16,14 @@ export async function apiRequest(path, options = {}) {
   return data;
 }
 
-export async function getGrievances() {
-  return apiRequest('/grievances');
+export async function getGrievances(params = {}) {
+  const query = new URLSearchParams(params).toString();
+  return apiRequest(`/grievances${query ? `?${query}` : ''}`);
+}
+
+export async function createGrievance(payload) {
+  return apiRequest('/grievances', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }
