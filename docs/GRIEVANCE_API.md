@@ -1,60 +1,54 @@
 # Grievance API
 
-All grievance endpoints require a valid `Authorization: Bearer <token>` header.
+Base path: `/api/grievances`
 
-## Create grievance
+## Citizen
 
-`POST /api/grievances`
+### POST `/`
+Creates a grievance and automatically runs AI triage.
 
+Required body:
 ```json
 {
-  "title": "Broken handpump near school",
-  "description": "The public handpump has stopped working and residents have no nearby water source.",
-  "panchayatId": "pan_example",
-  "location": {
-    "latitude": 28.60,
-    "longitude": 77.30,
-    "address": "Near primary school"
-  },
-  "evidence": ["https://example.com/photo.jpg"]
+  "title": "Broken water pipeline",
+  "description": "A major leak is flooding the lane and families cannot get clean water.",
+  "location": "Ward 4, near the government school",
+  "panchayatId": "panchayat_..."
 }
 ```
 
-The backend automatically produces category, severity, responsible department, summary and duplicate signals through the GramResolve triage engine. The AI result is advisory and can be overridden by an authorized Panchayat official.
+The response includes `category`, `severity`, `assignedDepartment`, `slaDueAt`, `sla`, `aiTriage`, and `timeline`.
 
-## List grievances
+## Panchayat
 
-`GET /api/grievances`
+### GET `/`
+Lists grievances visible to the authenticated user. Supports `status`, `severity`, and `category` filters. SLA state is refreshed on every read.
 
-Optional query parameters: `status`, `category`, `severity`.
-
-Citizens only see their own grievances. Officials only see grievances belonging to their Panchayat.
-
-## Get one grievance
-
-`GET /api/grievances/:id`
-
-## Update status
-
-`PATCH /api/grievances/:id/status`
-
+### PATCH `/:id/assign`
+Assign a grievance to a worker and/or department:
 ```json
 {
-  "status": "in_progress",
-  "note": "Repair team assigned to inspect the handpump."
-}
-```
-
-## Override AI triage
-
-`PATCH /api/grievances/:id/triage`
-
-```json
-{
-  "category": "water",
-  "severity": "high",
+  "assignedTo": "worker-12",
   "department": "Water & Sanitation"
 }
 ```
 
-Supported statuses: `submitted`, `under_review`, `assigned`, `in_progress`, `resolved`, `reopened`, `escalated`.
+An assignment moves a new grievance into `assigned` status.
+
+### PATCH `/:id/status`
+Change workflow status. Supported statuses include `assigned`, `in_progress`, `resolved`, `reopened`, and `escalated`. Optional `note` is added to the timeline.
+
+### PATCH `/:id/triage`
+Override AI classification when an official disagrees:
+```json
+{
+  "category": "water",
+  "severity": "high",
+  "department": "Water & Sanitation",
+  "reason": "The contamination risk is higher than the initial assessment."
+}
+```
+
+## Accountability
+
+Every assignment and status change is added to the grievance timeline. SLA state is `on_track`, `due_soon`, `overdue`, or `resolved`. A read that finds a grievance more than 15 minutes past its SLA automatically changes it to `escalated` and records the escalation event.
