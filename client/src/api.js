@@ -17,7 +17,7 @@ function normalizeGrievance(grievance) {
       if (!days && !hours && minutes) parts.push(`${minutes}m`);
       if (parts.length) label = `${label} · ${parts.join(' ')}`;
     }
-    normalized.sla = label;
+    normalized.sla = { state, overdue, remainingMs, label };
   }
   return normalized;
 }
