@@ -15,6 +15,10 @@ export async function apiRequest(path, options = {}) {
   return data;
 }
 
+export async function bootstrapDemo() {
+  return apiRequest('/demo/bootstrap', { method: 'POST' });
+}
+
 export async function getGrievances(params = {}) {
   const query = new URLSearchParams(params).toString();
   return apiRequest(`/grievances${query ? `?${query}` : ''}`);
